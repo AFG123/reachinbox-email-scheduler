@@ -7,10 +7,7 @@ import { scheduleEmailJob } from '../queues/emailQueue';
 import { logger } from '../utils/logger';
 
 // Create a standalone Redis client for our custom rate-limit counters
-const redisClient = new Redis({
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
-});
+const redisClient = new Redis(redisConnection as any);
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
