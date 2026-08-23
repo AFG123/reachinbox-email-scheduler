@@ -1,4 +1,5 @@
 import { useState, FormEvent } from 'react';
+import { API_URL } from '../config';
 
 interface LoginProps {
   onLoginSuccess: (user: { id: string; name: string; email: string; avatarUrl: string }) => void;
@@ -16,7 +17,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
 
   const handleGoogleLogin = () => {
     // Redirect browser directly to the backend OAuth initialization URL
-    window.location.href = 'http://localhost:5000/api/auth/google';
+    window.location.href = `${API_URL}/api/auth/google`;
   };
 
   return (

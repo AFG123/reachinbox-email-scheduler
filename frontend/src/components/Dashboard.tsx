@@ -4,8 +4,9 @@ import Sidebar from './Sidebar';
 import EmailList from './EmailList';
 import EmailDetail from './EmailDetail';
 import ComposeView from './ComposeView';
+import { API_URL } from '../config';
 
-const API_BASE_URL = 'http://localhost:5000/api/emails';
+const API_BASE_URL = `${API_URL}/api/emails`;
 
 interface Email {
   id: string;
@@ -118,7 +119,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   // Destroy session on the backend and log out
   const handleLogout = async () => {
     try {
-      await axios.get('http://localhost:5000/api/auth/logout');
+      await axios.get(`${API_URL}/api/auth/logout`);
     } catch (error) {
       console.error('Failed to logout on backend:', error);
     } finally {

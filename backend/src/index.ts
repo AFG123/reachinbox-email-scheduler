@@ -19,10 +19,12 @@ import './workers/emailWorker';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
 // Enable CORS with credentials support so cookie sessions work
 app.use(
   cors({
-    origin: 'http://localhost:5173', // Must match Vite frontend URL exactly
+    origin: FRONTEND_URL, // Must match Vite frontend URL exactly
     credentials: true, // Allows sending cookies across origins
   })
 );

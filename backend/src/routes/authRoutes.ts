@@ -6,13 +6,15 @@ const router = Router();
 // 1. Redirect user to Google OAuth consent screen
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
 // 2. Google OAuth callback handler
 router.get(
   '/google/callback',
-  passport.authenticate('google', { failureRedirect: 'http://localhost:5173/' }),
+  passport.authenticate('google', { failureRedirect: `${FRONTEND_URL}/` }),
   (req: Request, res: Response) => {
     // Authentication successful, redirect to frontend dashboard
-    res.redirect('http://localhost:5173/');
+    res.redirect(FRONTEND_URL);
   }
 );
 

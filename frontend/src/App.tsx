@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
+import { API_URL } from './config';
 
 // Configure Axios globally to send cookies for cross-origin requests
 axios.defaults.withCredentials = true;
@@ -21,7 +22,7 @@ function App() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/auth/me');
+        const response = await axios.get(`${API_URL}/api/auth/me`);
         setUser(response.data);
       } catch (error) {
         // Unauthorized, user needs to login
