@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tailwindcss/oxide-win32-x64-msvc": "^4.3.3",
     "autoprefixer": "^10.5.4",
     "axios": "^1.19.0",
     "lucide-react": "^1.33.0",
