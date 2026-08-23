@@ -35,7 +35,7 @@ app.use(express.json());
 // Trust proxy behind Render's HTTPS load balancer/reverse proxy
 app.set('trust proxy', 1);
 
-const isProduction = process.env.NODE_ENV === 'production' || !!process.env.BACKEND_URL?.includes('onrender.com');
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
 
 // Configure Express Session
 app.use(
