@@ -1,11 +1,7 @@
-import { useState, FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { API_URL } from '../config';
 
-interface LoginProps {
-  onLoginSuccess: (user: { id: string; name: string; email: string; avatarUrl: string }) => void;
-}
-
-export default function Login({ onLoginSuccess }: LoginProps) {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 

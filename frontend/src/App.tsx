@@ -48,7 +48,7 @@ function App() {
   return (
     <div className="w-screen h-screen overflow-hidden bg-white">
       {user === null ? (
-        <Login onLoginSuccess={setUser} />
+        <Login />
       ) : (
         <Dashboard user={user} onLogout={() => setUser(null)} />
       )}

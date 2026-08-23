@@ -1,4 +1,4 @@
-import { useState, useRef, ChangeEvent, KeyboardEvent } from 'react';
+import { useState, useRef, type ChangeEvent, type KeyboardEvent } from 'react';
 import { ArrowLeft, Clock, Upload, X, Bold, Italic, Underline, AlignLeft, List, Quote, ListOrdered } from 'lucide-react';
 
 interface Sender {
