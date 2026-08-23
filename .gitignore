@@ -6,6 +6,7 @@ node_modules/
 .windsurf/
 .claude/
 agents/
+.agents/
 skills-lock.json
 .gemini/
 
