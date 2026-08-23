@@ -32,6 +32,11 @@ app.use(
 // Parse incoming JSON payloads
 app.use(express.json());
 
+// Trust proxy behind Render's HTTPS load balancer/reverse proxy
+app.set('trust proxy', 1);
+
+const isProduction = process.env.NODE_ENV === 'production' || !!process.env.BACKEND_URL?.includes('onrender.com');
+
 // Configure Express Session
 app.use(
   session({
@@ -39,7 +44,8 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false, // Set to true only in production over HTTPS
+      secure: isProduction, // Set to true in production (requires HTTPS)
+      sameSite: isProduction ? 'none' : 'lax', // Allows cross-origin cookies in production
       httpOnly: true, // Protects against XSS attacks stealing session ID
       maxAge: 24 * 60 * 60 * 1000, // Cookie lasts 24 hours
     },
