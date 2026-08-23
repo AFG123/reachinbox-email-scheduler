@@ -1,0 +1,67 @@
+import express, { Request, Response } from 'express';
+import cors from 'cors';
+import session from 'express-session';
+import passport from 'passport';
+import dotenv from 'dotenv';
+import emailRoutes from './routes/emailRoutes';
+import authRoutes from './routes/authRoutes';
+import { errorHandler } from './middlewares/errorHandler';
+import { logger } from './utils/logger';
+
+dotenv.config();
+
+// Load Passport strategy configuration
+import './config/passport';
+
+// Spin up the background BullMQ worker
+import './workers/emailWorker';
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Enable CORS with credentials support so cookie sessions work
+app.use(
+  cors({
+    origin: 'http://localhost:5173', // Must match Vite frontend URL exactly
+    credentials: true, // Allows sending cookies across origins
+  })
+);
+
+// Parse incoming JSON payloads
+app.use(express.json());
+
+// Configure Express Session
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'reachinbox_default_secret_fallback',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false, // Set to true only in production over HTTPS
+      httpOnly: true, // Protects against XSS attacks stealing session ID
+      maxAge: 24 * 60 * 60 * 1000, // Cookie lasts 24 hours
+    },
+  })
+);
+
+// Initialize Passport Session middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Ping route for health checks
+app.get('/ping', (req: Request, res: Response) => {
+  res.json({ message: 'pong' });
+});
+
+// Register OAuth login routes
+app.use('/api/auth', authRoutes);
+
+// Register scheduling routes
+app.use('/api/emails', emailRoutes);
+
+// Register the global error handler middleware (must be registered last!)
+app.use(errorHandler);
+
+app.listen(PORT, () => {
+  logger.info(`Server is running on http://localhost:${PORT}`);
+});

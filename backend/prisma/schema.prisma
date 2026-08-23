@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum EmailStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+}
+
+model User {
+  id        String     @id @default(uuid())
+  googleId  String     @unique @map("google_id")
+  name      String
+  email     String     @unique
+  avatarUrl String?    @map("avatar_url")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  senders   Sender[]
+  campaigns Campaign[]
+
+  @@map("users")
+}
+
+model Sender {
+  id          String     @id @default(uuid())
+  userId      String     @map("user_id")
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email       String
+  displayName String     @map("display_name")
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  campaigns   Campaign[]
+  emails      Email[]
+
+  // A single user cannot add the exact same sender email twice
+  @@unique([userId, email])
+  @@map("senders")
+}
+
+model Campaign {
+  id          String     @id @default(uuid())
+  userId      String     @map("user_id")
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  senderId    String     @map("sender_id")
+  sender      Sender     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  subject     String
+  body        String
+  startTime   DateTime   @map("start_time")
+  delayMs     Int        @map("delay_ms")
+  hourlyLimit Int        @map("hourly_limit")
+  totalEmails Int        @map("total_emails")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  emails      Email[]
+
+  @@map("campaigns")
+}
+
+model Email {
+  id            String      @id @default(uuid())
+  campaignId    String?     @map("campaign_id")
+  campaign      Campaign?   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  senderId      String      @map("sender_id")
+  sender        Sender      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  recipient     String
+  subject       String
+  body          String
+  scheduledAt   DateTime    @map("scheduled_at")
+  status        EmailStatus @default(PENDING)
+  sentAt        DateTime?   @map("sent_at")
+  failedAt      DateTime?   @map("failed_at")
+  attempts      Int         @default(0)
+  bullmqJobId   String?     @unique @map("bullmq_job_id")
+  lastError     String?     @map("last_error")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([senderId, status])
+  @@map("emails")
+}

@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# IDE and Agent System Files (Not part of the app code)
+.windsurf/
+.claude/
+agents/
+skills-lock.json
+.gemini/
+
+# Build Output
+dist/
+build/
+
+# Environment Variables
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System & IDE files
+.vscode/
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local documentation & test uploads (excluding scripts)
+FigmaScreenshots/
+Projectdocs/
+*.txt
+TestDocs/
