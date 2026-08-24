@@ -108,14 +108,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     }
   };
 
-  // Handle email deletion (Mocked on frontend to immediately remove from view)
-  const handleDeleteEmail = (emailId: string) => {
-    setScheduledEmails((prev) => prev.filter((e) => e.id !== emailId));
-    setSentEmails((prev) => prev.filter((e) => e.id !== emailId));
-    setCurrentView('list');
-    setSelectedEmailId(null);
-  };
-
   // Destroy session on the backend and log out
   const handleLogout = async () => {
     try {
