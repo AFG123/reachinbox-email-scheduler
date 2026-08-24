@@ -165,7 +165,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               setCurrentView('list');
               setSelectedEmailId(null);
             }}
-            onDelete={handleDeleteEmail}
           />
         ) : (
           <EmailList

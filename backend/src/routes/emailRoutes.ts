@@ -4,7 +4,6 @@ import { isAuthenticated } from '../middlewares/auth';
 
 const router = Router();
 
-// Apply auth middleware to protect all sub-routes
 router.use(isAuthenticated);
 
 router.post('/schedule', scheduleEmails);

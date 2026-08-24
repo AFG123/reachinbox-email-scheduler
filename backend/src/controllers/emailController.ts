@@ -1,6 +1,23 @@
 import { Request, Response } from 'express';
 import { prisma } from '../prisma';
 import { scheduleEmailJob } from '../queues/emailQueue';
+import { z } from 'zod';
+
+// Define strict request body validation schema
+const scheduleCampaignSchema = z.object({
+  subject: z.string().min(1, 'Subject is required').max(200, 'Subject must be less than 200 characters'),
+  body: z.string().min(1, 'Body is required'),
+  recipients: z.array(
+    z.string().email('Invalid email address format')
+  ).min(1, 'At least one recipient is required'),
+  senderId: z.string().uuid('Invalid sender ID format'),
+  startTime: z.preprocess(
+    (val) => (val ? new Date(val as any) : new Date()),
+    z.date().refine((d) => !isNaN(d.getTime()), 'Invalid start time date format')
+  ),
+  delayMs: z.coerce.number().int().nonnegative('Delay must be a positive integer or zero').default(2000),
+  hourlyLimit: z.coerce.number().int().positive('Hourly limit must be a positive integer greater than zero').default(100),
+});
 
 /**
  * Endpoint to schedule a new campaign of emails
@@ -8,21 +25,21 @@ import { scheduleEmailJob } from '../queues/emailQueue';
  */
 export async function scheduleEmails(req: Request, res: Response) {
   try {
-    const { subject, body, recipients, startTime, delayMs, hourlyLimit, senderId } = req.body;
     const userId = req.user?.id;
-
-    // 1. Validation
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized.' });
     }
-    if (!subject || !body || !recipients || !Array.isArray(recipients) || recipients.length === 0) {
-      return res.status(400).json({ error: 'Missing subject, body, or recipients list.' });
-    }
-    if (!senderId) {
-      return res.status(400).json({ error: 'Missing sender ID.' });
+
+    const validationResult = scheduleCampaignSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      return res.status(400).json({
+        error: 'Validation failed.',
+        details: validationResult.error.flatten().fieldErrors,
+      });
     }
 
-    // Verify sender belongs to the user
+    const { subject, body, recipients, startTime, delayMs, hourlyLimit, senderId } = validationResult.data;
+
     const sender = await prisma.sender.findFirst({
       where: { id: senderId, userId },
     });
@@ -30,13 +47,11 @@ export async function scheduleEmails(req: Request, res: Response) {
       return res.status(404).json({ error: 'Sender profile not found or unauthorized.' });
     }
 
-    const parsedStartTime = new Date(startTime || Date.now());
-    const delayBetweenEmails = parseInt(delayMs) || 2000;
-    const limitPerHour = parseInt(hourlyLimit) || 100;
+    const parsedStartTime = startTime;
+    const delayBetweenEmails = delayMs;
+    const limitPerHour = hourlyLimit;
 
-    // 2. Perform Database Write inside a Transaction
     const result = await prisma.$transaction(async (tx) => {
-      // Create Campaign record
       const campaign = await tx.campaign.create({
         data: {
           userId,
@@ -52,7 +67,6 @@ export async function scheduleEmails(req: Request, res: Response) {
 
       // Map recipients to staggered scheduled times
       const emailsData = recipients.map((recipient: string, index: number) => {
-        // Space out scheduled times by the requested delay
         const scheduledAt = new Date(parsedStartTime.getTime() + index * delayBetweenEmails);
         return {
           campaignId: campaign.id,
@@ -65,12 +79,10 @@ export async function scheduleEmails(req: Request, res: Response) {
         };
       });
 
-      // Batch insert emails into the database
       await tx.email.createMany({
         data: emailsData,
       });
 
-      // Query the newly created emails to get their auto-generated IDs
       const createdEmails = await tx.email.findMany({
         where: { campaignId: campaign.id },
         select: { id: true, scheduledAt: true },

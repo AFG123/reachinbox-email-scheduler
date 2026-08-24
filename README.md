@@ -1,6 +1,6 @@
 # ReachInbox Email Scheduler & Dashboard
 
-A production-grade, highly scalable email campaign scheduler and tracking dashboard. Built using a modern full-stack TypeScript architecture, this application allows users to authenticate via Google OAuth, parse lists of leads (via CSV/Text), and schedule staggered email campaigns with granular concurrency controls, thread-safe throttling, and sliding-window rate-limiting.
+A reliable, highly scalable email campaign scheduler and tracking dashboard. Built using a modern full-stack TypeScript architecture, this application allows users to authenticate via Google OAuth, parse lists of leads (via CSV/Text), and schedule staggered email campaigns with granular concurrency controls, thread-safe throttling, and fixed-window (hourly) rate-limiting.
 
 ---
 
@@ -9,7 +9,7 @@ A production-grade, highly scalable email campaign scheduler and tracking dashbo
 * **Google OAuth 2.0 Login**: Secure, session-cookie-based authentication. Remembers user profiles and loads Google avatar/email.
 * **Leads File Parser**: Client-side CSV/Text reader that extracts and deduplicates email addresses automatically, rendering them as tags.
 * **Persistent Delayed Queue**: Powered by **BullMQ** and **Redis** to ensure scheduled emails survive server crashes or restarts.
-* **Granular Rate-Limiting**: Thread-safe Redis sliding window checks per sender profile to reschedule emails to the next hour if limits are reached (preserving sending order).
+* **Granular Rate-Limiting**: Thread-safe Redis fixed-window (hourly) checks per sender profile to reschedule emails to the next hour if limits are reached (preserving sending order).
 * **Smart Throttling (Sender Spacing)**: Enforces a configurable minimum delay between consecutive emails per sender profile using Redis reservation timestamps.
 * **Idempotency Checks**: Database-level tracking of `PENDING`, `PROCESSING`, `SENT`, and `FAILED` states to prevent double-sending under concurrency.
 * **Live Status Dashboard**: Automatically polls the backend database in the background. As emails are sent, they move from the **Scheduled** tab to the **Sent** tab in real-time.

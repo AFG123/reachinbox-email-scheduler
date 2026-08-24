@@ -1,5 +1,5 @@
 import { useState, useRef, type ChangeEvent, type KeyboardEvent } from 'react';
-import { ArrowLeft, Clock, Upload, X, Bold, Italic, Underline, AlignLeft, List, Quote, ListOrdered } from 'lucide-react';
+import { ArrowLeft, Clock, Upload, X } from 'lucide-react';
 
 interface Sender {
   id: string;
@@ -346,20 +346,8 @@ export default function ComposeView({ senders, onBack, onSchedule }: ComposeView
           </div>
         </div>
 
-        {/* Text Area and Mock Rich Text Toolbar */}
+        {/* Text Area */}
         <div className="border border-gray-100 rounded-2xl overflow-hidden focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500 transition-all flex flex-col min-h-[350px]">
-          {/* Formatting Bar Mockup */}
-          <div className="flex items-center flex-wrap gap-1 p-2 bg-gray-50/50 border-b border-gray-50 select-none">
-            <button type="button" className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer"><Bold className="w-4 h-4" /></button>
-            <button type="button" className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer"><Italic className="w-4 h-4" /></button>
-            <button type="button" className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer"><Underline className="w-4 h-4" /></button>
-            <div className="h-4 w-[1px] bg-gray-200 mx-1"></div>
-            <button type="button" className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer"><AlignLeft className="w-4 h-4" /></button>
-            <div className="h-4 w-[1px] bg-gray-200 mx-1"></div>
-            <button type="button" className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer"><List className="w-4 h-4" /></button>
-            <button type="button" className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer"><ListOrdered className="w-4 h-4" /></button>
-            <button type="button" className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer"><Quote className="w-4 h-4" /></button>
-          </div>
 
           {/* Text Editor Area */}
           <textarea

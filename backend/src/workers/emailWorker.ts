@@ -6,7 +6,6 @@ import { sendEmail } from '../services/mailer';
 import { scheduleEmailJob } from '../queues/emailQueue';
 import { logger } from '../utils/logger';
 
-// Create a standalone Redis client for our custom rate-limit counters
 const redisClient = new Redis(redisConnection as any);
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -20,7 +19,6 @@ export const emailWorker = new Worker(
     const { emailId } = job.data;
 
     try {
-      // 1. Fetch the email along with its sender and campaign config from DB
       const email = await prisma.email.findUnique({
         where: { id: emailId },
         include: {
@@ -34,23 +32,37 @@ export const emailWorker = new Worker(
         return;
       }
 
-      // 2. Idempotency Check: Don't re-send if already processed or processing
-      if (email.status === 'SENT' || email.status === 'PROCESSING') {
-        logger.info(`[Worker] Email ${emailId} is already ${email.status}. Skipping to prevent duplicates.`);
+      // 2. Idempotency & Stuck State Crash Recovery Check
+      if (email.status === 'SENT') {
+        logger.info(`[Worker] Email ${emailId} is already SENT. Skipping to prevent duplicates.`);
         return;
       }
 
-      // Mark email as PROCESSING in PostgreSQL
+      if (email.status === 'PROCESSING') {
+        // Consider it stale if it was started more than 2 minutes ago (SMTP timeout is 30s)
+        const STALE_THRESHOLD_MS = 2 * 60 * 1000;
+        const isStale = email.processingStartedAt && (Date.now() - email.processingStartedAt.getTime() > STALE_THRESHOLD_MS);
+
+        if (isStale) {
+          logger.warn(`[Worker] Email ${emailId} was stuck in PROCESSING state (started at ${email.processingStartedAt?.toISOString()}). Recovering stale state...`);
+        } else {
+          logger.info(`[Worker] Email ${emailId} is currently being processed by another active worker. Skipping to prevent duplicates.`);
+          return;
+        }
+      }
+
       await prisma.email.update({
         where: { id: emailId },
-        data: { status: 'PROCESSING' },
+        data: {
+          status: 'PROCESSING',
+          processingStartedAt: new Date(),
+        },
       });
 
       const { senderId, campaign } = email;
       const hourlyLimit = campaign?.hourlyLimit ?? parseInt(process.env.DEFAULT_HOURLY_LIMIT || '100');
       const delayMs = campaign?.delayMs ?? parseInt(process.env.DEFAULT_DELAY_MS || '2000');
 
-      // 3. Hourly Rate Limiting Check
       const now = new Date();
       // Generate key based on the UTC hour window: e.g., rate_limit:sender:UUID:2026-08-23-08
       const currentHourStr = `${now.getUTCFullYear()}-${now.getUTCMonth() + 1}-${now.getUTCDate()}-${now.getUTCHours()}`;
@@ -62,23 +74,20 @@ export const emailWorker = new Worker(
       }
 
       if (currentCount > hourlyLimit) {
-        // Exceeded hourly limit! Revert the counter increment
         await redisClient.decr(rateLimitKey);
 
-        // Compute milliseconds remaining until the start of the next hour
         const nextHour = new Date(now);
         nextHour.setUTCHours(now.getUTCHours() + 1, 0, 0, 0);
         const delayUntilNextHourMs = nextHour.getTime() - now.getTime();
 
-        // Reschedule the job in BullMQ to run in the next hour
         await scheduleEmailJob(emailId, delayUntilNextHourMs);
 
-        // Move status back to PENDING and update the scheduled time in DB
         await prisma.email.update({
           where: { id: emailId },
           data: {
             status: 'PENDING',
             scheduledAt: nextHour,
+            processingStartedAt: null,
           },
         });
 
@@ -88,25 +97,21 @@ export const emailWorker = new Worker(
         return;
       }
 
-      // 4. Minimum Throttling Delay Check (spacing out sends per sender)
       const lastSentKey = `last_sent:sender:${senderId}`;
       const lastSentTimeRaw = await redisClient.get(lastSentKey);
       const lastSentTime = lastSentTimeRaw ? parseInt(lastSentTimeRaw) : 0;
 
-      // Calculate when this email is allowed to send relative to the last one
       const targetSendTime = Math.max(Date.now(), lastSentTime + delayMs);
       
       // Update the last sent timestamp in Redis immediately to block parallel workers
       await redisClient.set(lastSentKey, targetSendTime.toString());
 
-      // If the target time is in the future, sleep until then
       const sleepDuration = targetSendTime - Date.now();
       if (sleepDuration > 0) {
         logger.info(`[Worker] Throttling sender ${senderId}. Sleeping for ${sleepDuration}ms...`);
         await sleep(sleepDuration);
       }
 
-      // 5. Send the Email via Ethereal SMTP
       const messageId = await sendEmail({
         fromName: email.sender.displayName,
         fromEmail: email.sender.email,
@@ -115,12 +120,12 @@ export const emailWorker = new Worker(
         body: email.body,
       });
 
-      // 6. Success: Update PostgreSQL status
       await prisma.email.update({
         where: { id: emailId },
         data: {
           status: 'SENT',
           sentAt: new Date(),
+          processingStartedAt: null,
           bullmqJobId: job.id,
           attempts: job.attemptsMade + 1,
         },
@@ -131,12 +136,12 @@ export const emailWorker = new Worker(
     } catch (error: any) {
       logger.error(`[Worker] Error processing email ${emailId}`, { error: error.message, stack: error.stack });
 
-      // Update failure log in PostgreSQL
       await prisma.email.update({
         where: { id: emailId },
         data: {
           status: 'FAILED',
           failedAt: new Date(),
+          processingStartedAt: null,
           attempts: job.attemptsMade + 1,
           lastError: error.message || 'Unknown error during send',
         },

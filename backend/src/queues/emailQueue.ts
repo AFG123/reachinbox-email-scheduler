@@ -1,7 +1,6 @@
 import { Queue } from 'bullmq';
 import { redisConnection } from '../config/redis';
 
-// Create a new queue named 'email-queue'
 export const emailQueue = new Queue('email-queue', {
   connection: redisConnection,
   defaultJobOptions: {
@@ -25,7 +24,7 @@ export async function scheduleEmailJob(emailId: string, delayMs: number) {
   const job = await emailQueue.add(
     'send-email',
     { emailId },
-    { delay: delayMs } // BullMQ handles the delay automatically
+    { delay: delayMs }
   );
   return job;
 }

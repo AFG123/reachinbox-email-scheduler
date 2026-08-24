@@ -2,12 +2,10 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { prisma } from '../prisma';
 
-// Save user ID to the session cookie
 passport.serializeUser((user: any, done) => {
   done(null, user.id);
 });
 
-// Retrieve the full user object from the database using the session user ID
 passport.deserializeUser(async (id: string, done) => {
   try {
     const user = await prisma.user.findUnique({ where: { id } });
@@ -19,7 +17,6 @@ passport.deserializeUser(async (id: string, done) => {
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
 
-// Configure the Google Strategy
 passport.use(
   new GoogleStrategy(
     {
@@ -34,7 +31,6 @@ passport.use(
           return done(new Error('No email address returned from Google profile.'), undefined);
         }
 
-        // Create or update the user record in the database
         const user = await prisma.user.upsert({
           where: { googleId: profile.id },
           update: {

@@ -10,6 +10,9 @@ import { logger } from './utils/logger';
 
 dotenv.config();
 
+import { validateEnv } from './config/env';
+validateEnv();
+
 // Load Passport strategy configuration
 import './config/passport';
 
@@ -40,7 +43,7 @@ const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER
 // Configure Express Session
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'reachinbox_default_secret_fallback',
+    secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -70,6 +73,13 @@ app.use('/api/emails', emailRoutes);
 // Register the global error handler middleware (must be registered last!)
 app.use(errorHandler);
 
+// Import stale processing recovery
+import { recoverStaleEmails } from './workers/recovery';
+
 app.listen(PORT, () => {
   logger.info(`Server is running on http://localhost:${PORT}`);
+  
+  // Run stale processing recovery loop on startup and every 2 minutes
+  recoverStaleEmails();
+  setInterval(recoverStaleEmails, 2 * 60 * 1000);
 });

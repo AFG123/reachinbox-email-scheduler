@@ -1,4 +1,4 @@
-import { ArrowLeft, Star, Trash2, Archive, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, AlertTriangle } from 'lucide-react';
 
 interface Email {
   id: string;
@@ -19,10 +19,9 @@ interface Email {
 interface EmailDetailProps {
   email: Email;
   onBack: () => void;
-  onDelete: (emailId: string) => void;
 }
 
-export default function EmailDetail({ email, onBack, onDelete }: EmailDetailProps) {
+export default function EmailDetail({ email, onBack }: EmailDetailProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString([], {
@@ -44,22 +43,6 @@ export default function EmailDetail({ email, onBack, onDelete }: EmailDetailProp
           <ArrowLeft className="w-4 h-4" />
           Back
         </button>
-
-        {/* Action icons */}
-        <div className="flex items-center gap-2">
-          <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl cursor-pointer transition-all">
-            <Star className="w-4 h-4" />
-          </button>
-          <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl cursor-pointer transition-all">
-            <Archive className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => onDelete(email.id)}
-            className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl cursor-pointer transition-all"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
       </header>
 
       {/* Email Workspace Content */}

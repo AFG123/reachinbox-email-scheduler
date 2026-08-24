@@ -38,4 +38,9 @@ yarn-error.log*
 FigmaScreenshots/
 Projectdocs/
 *.txt
+backend/local-tests/
 TestDocs/
+
+# Temporary and manual debug test scripts
+backend/src/test-email.ts
+backend/src/test-scheduler.ts

@@ -23,6 +23,7 @@ export default function Sidebar({
   onLogout,
 }: SidebarProps) {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const handleComposeClick = () => {
     setView('compose');
@@ -46,11 +47,18 @@ export default function Sidebar({
           onClick={() => setShowDropdown(!showDropdown)}
           className="flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100/80 active:bg-gray-100 rounded-xl cursor-pointer transition-colors"
         >
-          <img
-            src={user.avatarUrl}
-            alt={user.name}
-            className="w-10 h-10 rounded-full object-cover bg-gray-200 border border-gray-100"
-          />
+          {user.avatarUrl && !imageError ? (
+            <img
+              src={user.avatarUrl}
+              alt={user.name}
+              onError={() => setImageError(true)}
+              className="w-10 h-10 rounded-full object-cover bg-gray-200 border border-gray-100 shrink-0"
+            />
+          ) : (
+            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center font-bold text-[#00a854] text-base shrink-0 border border-green-200">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-semibold text-gray-800 truncate">{user.name}</h2>
             <p className="text-xs text-gray-400 truncate">{user.email}</p>

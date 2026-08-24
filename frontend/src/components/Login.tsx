@@ -1,16 +1,6 @@
-import { useState, type FormEvent } from 'react';
 import { API_URL } from '../config';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  // Trigger mock login for testing before Google OAuth is set up
-  const handleMockLogin = (e: FormEvent) => {
-    e.preventDefault();
-    alert('Traditional email sign-ups are disabled for this project. Please use "Login with Google".');
-  };
-
   const handleGoogleLogin = () => {
     // Redirect browser directly to the backend OAuth initialization URL
     window.location.href = `${API_URL}/api/auth/google`;
@@ -25,7 +15,7 @@ export default function Login() {
         <button
           onClick={handleGoogleLogin}
           type="button"
-          className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-colors font-medium text-sm cursor-pointer mb-6"
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-colors font-medium text-sm cursor-pointer"
         >
           {/* Simple Google SVG Icon */}
           <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -48,46 +38,6 @@ export default function Login() {
           </svg>
           Login with Google
         </button>
-
-        {/* Divider */}
-        <div className="relative mb-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-100"></div>
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-3 text-gray-400">or sign up through email</span>
-          </div>
-        </div>
-
-        {/* Traditional Credentials Form (Mocked) */}
-        <form onSubmit={handleMockLogin} className="space-y-4">
-          <div>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email ID"
-              required
-              className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition-all text-sm text-gray-800"
-            />
-          </div>
-          <div>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              required
-              className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition-all text-sm text-gray-800"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-[#00a854] hover:bg-green-600 active:bg-green-700 text-white font-medium py-3 px-4 rounded-xl transition-colors text-sm cursor-pointer shadow-sm shadow-green-100"
-          >
-            Login
-          </button>
-        </form>
       </div>
     </div>
   );
