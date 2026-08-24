@@ -65,6 +65,26 @@ graph TD
 
 ---
 
+## ⚠️ Important Deployment & Infrastructure Note
+
+> [!IMPORTANT]
+> **Active Email Sending Limitations on Live Demo (Render)**
+>
+> The live cloud deployment on Render **does not transmit actual emails** via Ethereal SMTP. Render's Free tier blocks all outbound SMTP ports (`25`, `465`, and `587`) as a standard anti-spam measure. 
+> 
+> * **What works in live deployment**: Google OAuth login, campaign creation, lead file uploading, database operations, status updates, and the real-time polling dashboard.
+> * **What works locally**: All outbound email-sending and SMTP processes are fully functional and verified in the local workspace environment (see demo walkthrough video).
+
+### Real-World Production Fixes (How to resolve this constraint):
+1. **Transactional Email APIs via HTTPS**: Use an email service provider with an HTTP API client (such as Resend, SendGrid, or Mailgun) to transmit emails over secure HTTP port `443` instead of raw SMTP ports, which bypasses port blocking entirely.
+2. **Upgrade Render Tier**: Upgrading to a paid tier on Render lifts the outbound SMTP restriction.
+3. **Alternative Cloud Providers**: Deploy the backend service to a virtual private server (e.g., DigitalOcean Droplet, AWS EC2) or a hosting provider that does not block outbound SMTP ports by default (such as Railway or Fly.io).
+
+### Project Context & Constraints:
+Given the assignment's 48-hour window and Ethereal SMTP being a hard requirement, I prioritized the correctness and security of the local implementation and documented this cloud infrastructure constraint rather than reworking the email provider integration under time pressure.
+
+---
+
 ## ⚙️ Setup and Installation
 
 ### Prerequisites
