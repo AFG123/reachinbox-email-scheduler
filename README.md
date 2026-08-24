@@ -88,14 +88,15 @@ docker compose up -d
    ```
 3. Fill out the environment variables in `.env`:
    * Obtain **Google Client ID** and **Client Secret** from the [Google Cloud Console](https://console.cloud.google.com/).
+     * *Note: In your Google credentials settings, register your **Authorized redirect URIs** to include: `http://localhost:5000/api/auth/google/callback`*
    * Set `SESSION_SECRET` to a random cryptographic string.
    * Provide your Ethereal SMTP user/password if you want to inspect test inboxes.
 
-### Step 3: Run Database Migrations
-Generate tables and apply the schema inside the `backend` folder:
+### Step 3: Sync Database Schema
+Install dependencies and sync the schema to create PostgreSQL tables:
 ```bash
 npm install
-npx prisma migrate dev --name init
+npx prisma db push
 ```
 
 ### Step 4: Start the Backend Server
