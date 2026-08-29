@@ -31,7 +31,7 @@ export default function DeploymentNoticeBanner() {
           >
             README
           </a>{" "}
-          for details and demo video).
+          for details).
         </p>
         <button
           onClick={() => setDismissed(true)}
