@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
+import DeploymentNoticeBanner from './components/DeploymentNoticeBanner';
 import { API_URL } from './config';
 
 // Configure Axios globally to send cookies for cross-origin requests
@@ -46,12 +47,15 @@ function App() {
   }
 
   return (
-    <div className="w-screen h-screen overflow-hidden bg-white">
-      {user === null ? (
-        <Login />
-      ) : (
-        <Dashboard user={user} onLogout={() => setUser(null)} />
-      )}
+    <div className="w-screen h-screen overflow-hidden bg-white flex flex-col">
+      <DeploymentNoticeBanner />
+      <div className="flex-1 overflow-hidden">
+        {user === null ? (
+          <Login />
+        ) : (
+          <Dashboard user={user} onLogout={() => setUser(null)} />
+        )}
+      </div>
     </div>
   );
 }

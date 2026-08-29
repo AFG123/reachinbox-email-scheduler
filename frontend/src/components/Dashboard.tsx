@@ -4,7 +4,6 @@ import Sidebar from './Sidebar';
 import EmailList from './EmailList';
 import EmailDetail from './EmailDetail';
 import ComposeView from './ComposeView';
-import DeploymentNoticeBanner from './DeploymentNoticeBanner';
 import { API_URL } from '../config';
 
 const API_BASE_URL = `${API_URL}/api/emails`;
@@ -121,17 +120,16 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   };
 
   // Find currently selected email details
-  const selectedEmail =
-    scheduledEmails.find((e) => e.id === selectedEmailId) ||
-    sentEmails.find((e) => e.id === selectedEmailId);
+  const selectedEmail = selectedEmailId
+    ? [...scheduledEmails, ...sentEmails].find((e) => e.id === selectedEmailId)
+    : null;
 
-  // Determine current active list
   const activeEmailsList = currentTab === 'scheduled' ? scheduledEmails : sentEmails;
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-white font-sans antialiased text-gray-800">
+    <div className="flex h-screen bg-gray-50/50 overflow-hidden font-sans">
       
-      {/* Sidebar Navigation */}
+      {/* Sidebar */}
       <Sidebar
         user={user}
         currentTab={currentTab}
@@ -145,7 +143,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
 
       {/* Main Right Content Section */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
-        <DeploymentNoticeBanner />
         {currentView === 'compose' ? (
           <ComposeView
             senders={senders}
