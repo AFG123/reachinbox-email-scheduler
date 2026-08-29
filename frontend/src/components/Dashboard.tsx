@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import EmailList from './EmailList';
 import EmailDetail from './EmailDetail';
 import ComposeView from './ComposeView';
+import DeploymentNoticeBanner from './DeploymentNoticeBanner';
 import { API_URL } from '../config';
 
 const API_BASE_URL = `${API_URL}/api/emails`;
@@ -144,6 +145,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
 
       {/* Main Right Content Section */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
+        <DeploymentNoticeBanner />
         {currentView === 'compose' ? (
           <ComposeView
             senders={senders}

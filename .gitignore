@@ -44,3 +44,6 @@ TestDocs/
 # Temporary and manual debug test scripts
 backend/src/test-email.ts
 backend/src/test-scheduler.ts
+
+# Ignore root component template
+/DeploymentNoticeBanner.tsx
